@@ -17,6 +17,7 @@ Plugin responsible for setting OpenStack global options
 """
 
 import os
+import json
 import re
 import logging
 import platform
@@ -1260,21 +1261,14 @@ def preinstall_and_discover(config, messages):
         for i in ('modules', 'resources'):
             server.append('mkdir --mode 0700 %s' % os.path.join(host_dir, i))
         server.execute()
-        details.setdefault(hostname, {})['tmpdir'] = host_dir
 
         # discover other host info; Facter is installed as Puppet dependency,
         # so we let it do the work
         server.clear()
-        server.append('facter -p')
+        server.append('facter -p --json')
         rc, stdout = server.execute()
-        for line in stdout.split('\n'):
-            try:
-                key, value = line.split('=>', 1)
-            except ValueError:
-                # this line is probably some warning, so let's skip it
-                continue
-            else:
-                details[hostname][key.strip()] = value.strip()
+        details[hostname] = json.loads(stdout)
+        details[hostname]['tmpdir'] = host_dir
 
         # create a symbolic link to /etc/hiera.yaml to avoid warning messages
         # such as "Warning: Config file /etc/puppet/hiera.yaml not found,

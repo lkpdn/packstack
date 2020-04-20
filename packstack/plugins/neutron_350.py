@@ -826,10 +826,10 @@ def create_manifests(config, messages):
                                 n_host, config)
                         else:
                             iface = config['CONFIG_NEUTRON_OVS_TUNNEL_IF']
-                        ifip = ("ipaddress_%s" % iface)
-                        ifip = re.sub('[\.\-\:]', '_', ifip)
                         try:
-                            src_host = config['HOST_DETAILS'][n_host][ifip]
+                            src_host = (config['HOST_DETAILS'][n_host]
+                                              ['networking']['interfaces']
+                                              [iface]['ip'])
                         except KeyError:
                             raise KeyError('Couldn\'t detect ipaddress of '
                                            'interface %s on node %s' %
